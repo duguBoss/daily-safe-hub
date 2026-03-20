@@ -283,7 +283,6 @@ def call_gemini(
     session: requests.Session,
     api_key: str,
     source_title: str,
-    source_url: str,
     pub_date: str,
     content_text: str,
     github_image_urls: list[str],
@@ -308,12 +307,12 @@ Rules:
 4) Keep content detailed and practical, target around 1200+ Chinese characters.
 5) Include sections like: threat snapshot, technical details, impact analysis, defense checklist, SOC actions.
 6) Use as many provided GitHub image URLs as possible with <img>.
-7) In the source section, print source URL as plain text (not hyperlink).
-8) No extra fields and no explanation outside JSON.
+7) Do NOT display any source URL, reference link, or "来源" section in the final content.
+8) End the article with a concise "总结" section instead of source links.
+9) No extra fields and no explanation outside JSON.
 
 News title: {source_title}
 Published: {pub_date}
-Source URL: {source_url}
 Image URLs: {json.dumps(github_image_urls, ensure_ascii=False)}
 Article extracted text: {content_text[:18000]}
 """.strip()
@@ -364,27 +363,23 @@ Article extracted text: {content_text[:18000]}
 def ensure_wxhtml(
     wxhtml: str,
     source_title: str,
-    source_url: str,
     pub_date: str,
     github_images: list[str],
+    summary: str,
 ) -> str:
     body = (wxhtml or "").strip()
     if not body:
         body = (
             f"<section><h2>{escape(source_title)}</h2>"
-            "<p>这是一篇面向实战场景的安全情报速读，帮助你快速掌握风险与防护动作。</p>"
+            "<p>这是一篇面向实战场景的安全情报速读，帮助你快速掌握威胁动态与防守动作。</p>"
             "</section>"
         )
 
-    # Strip source URL hyperlink if model created one.
-    safe_source = escape(source_url)
-    body = re.sub(
-        rf"<a[^>]*href=[\"']{re.escape(source_url)}[\"'][^>]*>.*?</a>",
-        safe_source,
-        body,
-        flags=re.I | re.S,
-    )
-    body = body.replace(f"href='{source_url}'", "").replace(f'href="{source_url}"', "")
+    # Remove links and possible source/reference blocks for cleaner presentation.
+    body = re.sub(r"<a[^>]*>(.*?)</a>", r"\1", body, flags=re.I | re.S)
+    body = re.sub(r"(原文地址|来源|source|reference)[:：]?\s*https?://\S+", "", body, flags=re.I)
+    body = re.sub(r"https?://\S+", "", body)
+    body = re.sub(r"(原文地址|文章来源|来源)[:：]?", "", body, flags=re.I)
     body = re.sub(r"<script[\s\S]*?</script>", "", body, flags=re.I)
 
     text_len = len(BeautifulSoup(body, "html.parser").get_text(" ", strip=True))
@@ -412,9 +407,8 @@ def ensure_wxhtml(
 
     body += (
         "<section style='margin-top:18px;padding:14px;background:#fff7ed;border:1px solid #fdba74;border-radius:10px;'>"
-        "<h3 style='margin:0 0 8px;font-size:18px;color:#7c2d12;'>原文地址</h3>"
-        f"<p style='margin:0;color:#7c2d12;word-break:break-all;'>{safe_source}</p>"
-        "<p style='margin:8px 0 0;color:#9a3412;font-size:14px;'>微信内请长按复制以上地址，使用浏览器访问。</p>"
+        "<h3 style='margin:0 0 8px;font-size:18px;color:#7c2d12;'>总结</h3>"
+        f"<p style='margin:0;color:#7c2d12;'>{escape(summary)}</p>"
         "</section>"
     )
 
@@ -461,7 +455,6 @@ def main() -> int:
         session=session,
         api_key=api_key,
         source_title=detail["title"],
-        source_url=detail["source_url"],
         pub_date=detail["pub_date"],
         content_text=detail["content_text"],
         github_image_urls=github_images,
@@ -469,18 +462,18 @@ def main() -> int:
 
     title = str(gemini_result.get("title", "")).strip() or f"{detail['title']} | 安全速报"
     summary = str(gemini_result.get("summary", "")).strip() or (
-        "今日安全快报：提炼威胁动态、影响评估与防守清单，附原文地址与图文解读。"
+        "今日安全快报：提炼威胁动态、影响评估与防守清单，便于安全团队快速执行。"
     )
     wxhtml_raw = str(gemini_result.get("wxhtml", "")).strip()
     wxhtml = ensure_wxhtml(
         wxhtml=wxhtml_raw,
         source_title=title,
-        source_url=detail["source_url"],
         pub_date=detail["pub_date"],
         github_images=github_images,
+        summary=summary,
     )
 
-    covers = list(dict.fromkeys(github_images + [detail["source_url"]]))
+    covers = list(dict.fromkeys(github_images))
     post_data = {"title": title, "covers": covers, "wxhtml": wxhtml, "summary": summary}
     POST_JSON.write_text(json.dumps(post_data, ensure_ascii=False, indent=2), encoding="utf-8")
     log(f"written: {POST_JSON}")
