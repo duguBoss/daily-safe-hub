@@ -22,6 +22,11 @@ OUTPUT_DIR = ROOT / "output"
 ASSETS_DIR = ROOT / "assets" / "today"
 POST_JSON = OUTPUT_DIR / "post.json"
 SEEN_FILE = DATA_DIR / "seen_urls.json"
+HEADER_IMG = (
+    "https://mmbiz.qpic.cn/mmbiz_gif/"
+    "xm1dT1jCe8lIO3P2oFVtd1x040PKGCRPN033gUTrHQQz0Licdqug5X1QgUPQBRCicoTqdYMrpgk7etibXLkK9rwcg/0"
+    "?wx_fmt=gif&from=appmsg"
+)
 
 RSS_URL = "https://feeds.feedburner.com/TheHackersNews"
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
@@ -423,6 +428,9 @@ def ensure_wxhtml(
 
     return (
         "<section style='font-size:16px;line-height:1.78;color:#111827;'>"
+        "<section style='margin:0 0 14px;'>"
+        f"<img src='{HEADER_IMG}' style='width:100%;height:auto;display:block;border-radius:12px;'/>"
+        "</section>"
         "<section style='padding:14px;border-radius:12px;background:#0b1220;color:#e5e7eb;"
         "border:1px solid #1f2937;margin-bottom:14px;'>"
         "<p style='margin:0 0 6px;font-size:13px;color:#fca5a5;'>DAILY SAFE BRIEF</p>"
