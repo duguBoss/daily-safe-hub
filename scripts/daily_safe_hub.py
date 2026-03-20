@@ -363,9 +363,9 @@ Article extracted text: {content_text[:18000]}
 def ensure_wxhtml(
     wxhtml: str,
     source_title: str,
-    pub_date: str,
     github_images: list[str],
     summary: str,
+    text_tags: list[str],
 ) -> str:
     body = (wxhtml or "").strip()
     if not body:
@@ -411,6 +411,15 @@ def ensure_wxhtml(
         f"<p style='margin:0;color:#7c2d12;'>{escape(summary)}</p>"
         "</section>"
     )
+    if text_tags:
+        tags_text = " ".join(text_tags)
+        body += (
+            "<section style='margin-top:10px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;'>"
+            "<p style='margin:0;font-size:14px;color:#334155;'>"
+            f"标签：{escape(tags_text)}"
+            "</p>"
+            "</section>"
+        )
 
     return (
         "<section style='font-size:16px;line-height:1.78;color:#111827;'>"
@@ -418,13 +427,32 @@ def ensure_wxhtml(
         "border:1px solid #1f2937;margin-bottom:14px;'>"
         "<p style='margin:0 0 6px;font-size:13px;color:#fca5a5;'>DAILY SAFE BRIEF</p>"
         f"<h2 style='margin:0 0 8px;font-size:22px;line-height:1.4;'>{escape(source_title)}</h2>"
-        f"<p style='margin:0;font-size:13px;color:#cbd5e1;'>发布时间: {escape(pub_date)}</p>"
         "</section>"
         "<section style='padding:14px;border-radius:12px;background:#ffffff;border:1px solid #e5e7eb;'>"
         f"{body}"
         "</section>"
         "</section>"
     )
+
+
+def build_text_tags(title: str) -> list[str]:
+    tags = ["#网络安全", "#威胁情报", "#漏洞预警", "#安全运营"]
+    lower_title = title.lower()
+    mapping = [
+        ("ransom", "#勒索软件"),
+        ("phish", "#钓鱼攻击"),
+        ("ddos", "#DDoS"),
+        ("botnet", "#僵尸网络"),
+        ("zero-day", "#零日漏洞"),
+        ("linux", "#Linux安全"),
+        ("windows", "#Windows安全"),
+        ("cloud", "#云安全"),
+        ("iot", "#IoT安全"),
+    ]
+    for kw, tag in mapping:
+        if kw in lower_title and tag not in tags:
+            tags.append(tag)
+    return tags[:8]
 
 
 def main() -> int:
@@ -465,12 +493,13 @@ def main() -> int:
         "今日安全快报：提炼威胁动态、影响评估与防守清单，便于安全团队快速执行。"
     )
     wxhtml_raw = str(gemini_result.get("wxhtml", "")).strip()
+    text_tags = build_text_tags(title)
     wxhtml = ensure_wxhtml(
         wxhtml=wxhtml_raw,
         source_title=title,
-        pub_date=detail["pub_date"],
         github_images=github_images,
         summary=summary,
+        text_tags=text_tags,
     )
 
     covers = list(dict.fromkeys(github_images))
