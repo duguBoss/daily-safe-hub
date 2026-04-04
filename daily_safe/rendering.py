@@ -96,7 +96,7 @@ def _append_missing_images(body: str, github_images: list[str]) -> str:
 def _append_summary_section(body: str, summary: str) -> str:
     body += (
         "<section style='margin-top:32px;padding:16px 20px;background-color:#f8fafc;border-radius:6px;border-left:4px solid #0369a1;'>"
-        "<p style='margin:0;color:#0f172a;font-size:15px;line-height:1.7;font-weight:500;'><span style='color:#0369a1;font-weight:600;margin-right:8px;'>编者按：</span>"
+        "<p style='margin:0;color:#0f172a;font-size:15px;line-height:1.7;font-weight:500;'><span style='color:#0369a1;font-weight:600;margin-right:8px;'>情报总结：</span>"
         f"{escape(summary)}</p>"
         "</section>"
     )
