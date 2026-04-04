@@ -50,31 +50,27 @@ def _ensure_min_content(body: str) -> str:
     text_len = len(BeautifulSoup(body, "html.parser").get_text(" ", strip=True))
     if text_len < 900:
         body += (
-            "<section style='margin-top:32px;'>"
-            "<h3 style='display:inline-block;margin:0 0 16px;font-size:18px;color:#1C1F23;font-weight:bold;padding-bottom:6px;border-bottom:2px solid #0052D9;letter-spacing:1px;'>防守方执行清单</h3>"
-            "<p style='margin:0 0 16px;color:#4B5563;font-size:16px;line-height:1.8;text-align:justify;'>建议从三个层面立即落地：<br><strong style='color:#0052D9;font-weight:600;'>第一，资产层面</strong>先确认受影响系统版本、暴露面和外网入口，把高风险节点拉出清单；<br><strong style='color:#0052D9;font-weight:600;'>第二，检测层面</strong>增加针对该攻击链的日志规则与告警聚合，优先关注异常登录、提权与横向移动行为；<br><strong style='color:#0052D9;font-weight:600;'>第三，响应层面</strong>同步修复优先级，明确24小时内可完成项。</p>"
-            "<p style='margin:0;color:#4B5563;font-size:16px;line-height:1.8;text-align:justify;'>若你在企业内负责安全运营，建议将本文分为<strong>“高层简报版”</strong>与<strong>“执行任务版”</strong>。简报版强调业务风险与处置进度；任务版明确责任人、系统、时间窗与验收标准，全面提升团队协同效率并降低沟通成本。</p>"
-            "</section>"
+            "<h2 style='font-size:18px;font-weight:600;color:#0f172a;margin:28px 0 12px 0;border-bottom:1px solid #e2e8f0;padding-bottom:6px;'>🛠 防守侧行动指南</h2>"
+            "<p style='margin:0 0 16px;color:#334155;font-size:16px;line-height:1.7;'>建议安全团队按以下优先级响应：<br><strong style='color:#0369a1;'>1. 盘点资产暴露面：</strong> 明确受直接影响的系统及外部入口，标记高危节点。<br><strong style='color:#0369a1;'>2. 增补检测规则：</strong> 根据TTPs在SIEM/NDR中布防告警，重点捕捉异常活动与越权尝试。<br><strong style='color:#0369a1;'>3. 加固与拦截：</strong> 更新防护设备策略并实施紧急补丁，设定阻断指标。</p>"
         )
     return body
 
 
 def _append_missing_images(body: str, github_images: list[str]) -> str:
     missing_images = [u for u in github_images if u not in body]
-    for u in missing_images:
-        body += (
-            "<section style='margin:28px 0;text-align:center;'>"
-            f"<img src='{escape(u)}' style='max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.06);'/>"
-            "</section>"
-        )
+    if missing_images:
+        body += "<section style='margin-top:20px;'>"
+        for u in missing_images:
+            body += f"<img src='{escape(u)}' style='width:100%;height:auto;margin-bottom:12px;display:block;'/>"
+        body += "</section>"
     return body
 
 
 def _append_summary_section(body: str, summary: str) -> str:
     body += (
-        "<section style='margin-top:32px;padding:24px;background-color:#F8FAFC;border-left:4px solid #0052D9;border-radius:0 8px 8px 0;box-shadow:0 2px 8px rgba(0,0,0,0.02);'>"
-        "<h3 style='margin:0 0 12px;font-size:18px;color:#0052D9;font-weight:bold;letter-spacing:0.5px;'>情报总结</h3>"
-        f"<p style='margin:0;color:#334155;font-size:15px;line-height:1.8;text-align:justify;'>{escape(summary)}</p>"
+        "<section style='margin-top:28px;padding:16px;background-color:#f8fafc;border-radius:6px;'>"
+        "<p style='margin:0;color:#0f172a;font-size:15px;line-height:1.7;font-weight:500;'><span style='color:#0ea5e9;font-weight:600;margin-right:8px;'>编者按</span>"
+        f"{escape(summary)}</p>"
         "</section>"
     )
     return body
@@ -82,9 +78,9 @@ def _append_summary_section(body: str, summary: str) -> str:
 
 def _append_tags_section(body: str, text_tags: list[str]) -> str:
     if text_tags:
-        tags_html = "".join([f"<span style='display:inline-block;margin:0 8px 8px 0;padding:4px 14px;background-color:#F1F5F9;color:#64748B;font-size:13px;border-radius:100px;letter-spacing:0.5px;'>{escape(t)}</span>" for t in text_tags])
+        tags_html = "".join([f"<span style='display:inline-block;margin:0 6px 6px 0;color:#64748b;font-size:14px;'>{escape(t)}</span>" for t in text_tags])
         body += (
-            "<section style='margin-top:36px;'>"
+            "<section style='margin-top:28px;border-top:1px dashed #cbd5e1;padding-top:16px;'>"
             f"<section>{tags_html}</section>"
             "</section>"
         )

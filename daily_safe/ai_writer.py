@@ -49,63 +49,50 @@ def call_gemini(
     article_blocks = _build_article_blocks(source_title, pub_date, content_text, github_image_urls)
 
     prompt = f"""
-你是一位顶级的网络安全情报分析专家和资深科技媒体主编。你需要将提供的英文安全资讯，深度提炼并转化为极为专业、结构严谨、排版精美、具有极高阅读价值和决策参考意义的中文安全情报报告。
+你是一位顶级的网络安全情报分析专家和资深科技媒体主编。你需要将提供的英文安全资讯，提炼并转化为专业、可读性极强、排版高级且留白合理的中文安全情报文章。
 
 内容素材:
 {article_blocks}
 
 输出格式要求:
 1) 输出纯JSON，包含且仅包含: title, summary, wxhtml
-2) 所有正文必须使用严谨、专业的简体中文，避免机器翻译感。
+2) 所有正文必须使用严谨、专业的简体中文。
 
 标题要求 (title):
 - 长度: 18-28个中文字符
-- 必须包含: 具体的威胁组织/CVE编号/漏洞名称/或核心攻击技术
-- 必须包含: 关键影响（例如：破坏规模、针对行业等）
-- 风格: 如同顶级安全智库的深度研报标题，极具信息密度和专业权威感，但实事求是。
-- 绝不使用"速报/要闻/汇总/盘点"等低沉淀感词汇。
-- 绝不出现完整URL或"来源"字样。
+- 必须包含具体的威胁组织、漏洞名称或关键影响
+- 风格: 极具信息密度和专业权威感，但实事求是。绝不使用"速报/要闻/汇总"等词汇。
 
 摘要要求 (summary):
-- 长度: 120-180个中文字符
-- 内容: 以高管或CISO视角，用一两句话讲透“发生了什么、到底有多危险、需要采取什么关键行动”。这是信息的精华。
+- 长度: 80-150个中文字符
+- 内容: 用一两句话讲透核心安全事件。
 
 正文要求 (wxhtml):
 - 长度: 1500-2500个中文字符
-- 定位: 面向CISO、安全架构师、一线安全专家的深度剖析报告。
-- 结构必须严格包含以下模块（按顺序）：
-  1. 威胁态势研判: 概括该威胁背景、攻击组织特征、目标画像及本次攻击意图。
-  2. 技术链路剖析: 深度解析攻击手法、漏洞利用过程、TTPs（需突出战术与技术细节）。
-  3. 影响面与风险评估: 详细说明受影响的系统版本、组件及引发的次生风险。
-  4. 缓解与防御预案: 极具实操性的短期应急措施和中长期加固指南。
-  5. 运营洞察 (SOC/蓝军视角): 从威胁狩猎、日志研判、告警规则等实战角度给出专家建议。
+- 定位: 面向CISO、安全架构师、一线专家的深度分析。
+- 结构与行文：不要生硬堆砌模块。文章要有自然的呼吸感，按照“背景概览 -> 攻击解码 -> 风险定级 -> 防御建议 -> 运营洞察”的逻辑顺畅行文，以讲故事和深度分析的口吻推进。
 
-正文极其严格的高级HTML排版规范 (请完全按照以下格式进行输出，这是微信公众号精美排版的必须条件):
-- 模块结构：各个核心模块必须使用 `<section style="margin-bottom: 36px;"></section>` 包裹。
-- 模块标题：统一使用以下优美的标题样式（不要改变style属性）：
-  <section style="display:flex;align-items:center;margin-bottom:16px;">
-    <span style="display:inline-block;width:4px;height:18px;background-color:#0052D9;border-radius:2px;margin-right:10px;"></span>
-    <h2 style="margin:0;font-size:20px;color:#1C1F23;font-weight:700;letter-spacing:0.5px;">此处写模块名称</h2>
+正文极其严格的高级HTML排版规范 (请完全按照以下格式进行输出，专门适配微信公众号全宽无边距的高级阅读体验):
+- 模块标题：使用简洁富有质感的标题（不要改变style，不要增加额外的div包裹）：
+  <h2 style="font-size: 18px; font-weight: 600; color: #0f172a; margin: 28px 0 12px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+    模块名称
+  </h2>
+- 段落文本：用 `<p style="margin: 0 0 16px; font-size: 16px; color: #334155; line-height: 1.7;">`。列表项也使用该样式。
+- 重点强调：核心攻击手法、CVE编号、IOC等，用 `<strong style="color: #0369a1; font-weight: 600;">关键字</strong>` 加以高亮。
+- 代码片段：`<code style="display:inline-block;background-color:#f1f5f9;color:#e11d48;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:14px;word-break:break-all;">内容</code>`
+- 引用强调：
+  <section style="margin:20px 0;padding:16px;background-color:#f8fafc;border-left:3px solid #0369a1;">
+    <p style="margin:0;font-size:15px;color:#475569;line-height:1.7;">引用或专家点评内容</p>
   </section>
-- 段落文本：用 `<p style="margin:0 0 16px;font-size:16px;color:#4B5563;line-height:1.8;text-align:justify;word-wrap:break-word;">` 包裹。若是列表项，也请保持字体颜色和行高一致。
-- 重点强调文字：重要的技术名词、特定的影响系统、核心数据等，必须使用 `<strong style="color:#0052D9;font-weight:600;">关键字</strong>` 加以高亮。
-- IOC信息/代码段：对于IP/Hash/路径/命令词等，使用 `<code style="display:inline-block;background-color:#F2F5F8;color:#E34D59;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:14px;word-break:break-all;">内容</code>`。
-- 警示引用或核心思想（可选使用）：
-  <section style="margin:20px 0;padding:16px 20px;background-color:#F8FAFC;border-left:4px solid #0052D9;border-radius:4px;">
-    <p style="margin:0;font-size:15px;color:#334155;line-height:1.7;">引用内容</p>
-  </section>
-- 图片使用：必须且只使用素材中提供的 Images 数组中的图片。
-  插入图片时必须严格采用如下格式（不含任何外部链接，且只用素材图片）：
-  <section style="margin:24px 0;text-align:center;">
-    <img src="素材提供的图片URL" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.06);" />
-  </section>
-- 绝对禁止的内容：任何 `<a>` 标签、`<script>`。绝对禁止以"综上所述"、“以上就是”等废话结尾，要在专业内容处戛然而止。
+- 图片使用：必须且只使用素材中提供的图片，根据内容在合适的位置插入。
+  <img src="素材图片URL" style="width:100%;height:auto;margin-bottom:16px;display:block;" />
+- 禁止：任何 `<a>` 标签、引用的外部链接。
 
 JSON输出格式:
 {{
   "title": "...",
   "summary": "...",
-  "wxhtml": "<section style='margin-bottom: 36px;'><section style='display:flex;...'>...</section><p style='...'>...</p></section>"
+  "wxhtml": "<h2>...</h2><p>...</p><img><p>...</p>"
 }}
 """
 
