@@ -84,15 +84,13 @@ def call_gemini(
   <section style="margin:20px 0;padding:16px;background-color:#f8fafc;border-left:3px solid #0369a1;">
     <p style="margin:0;font-size:15px;color:#475569;line-height:1.7;">引用或专家点评内容</p>
   </section>
-- 图片使用：必须且只使用素材中提供的图片，根据内容在合适的位置插入。
-  <img src="素材图片URL" style="width:100%;height:auto;margin-bottom:16px;display:block;" />
-- 禁止：任何 `<a>` 标签、引用的外部链接。
+- 图片与多媒体：后台渲染系统会自动提取并在合适的段落之间插入精美配图。你**绝对不要**在正文(wxhtml)中输出任何 `<img>`、`<video>` 或 `<a>` 标签。
 
-JSON输出格式:
+JSON输出格式示例:
 {{
   "title": "...",
   "summary": "...",
-  "wxhtml": "<h2>...</h2><p>...</p><img><p>...</p>"
+  "wxhtml": "<h2>...</h2><p>...</p><p>...</p>"
 }}
 """
 

@@ -57,19 +57,46 @@ def _ensure_min_content(body: str) -> str:
 
 
 def _append_missing_images(body: str, github_images: list[str]) -> str:
-    missing_images = [u for u in github_images if u not in body]
-    if missing_images:
-        body += "<section style='margin-top:20px;'>"
+    if not github_images:
+        return body
+
+    soup = BeautifulSoup(body, "html.parser")
+    paragraphs = soup.find_all("p")
+    
+    missing_images = [u for u in github_images if str(u) not in body]
+    if not missing_images:
+        return body
+
+    if not paragraphs:
         for u in missing_images:
-            body += f"<img src='{escape(u)}' style='width:100%;height:auto;margin-bottom:12px;display:block;'/>"
-        body += "</section>"
-    return body
+            body += f"<section style='margin-top:20px;'><img src='{escape(u)}' style='width:100%;height:auto;margin-bottom:12px;display:block;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.05);'/></section>"
+        return body
+
+    num_p = len(paragraphs)
+    num_img = len(missing_images)
+    step = max(1, num_p // (num_img + 1))
+    
+    for i, img_url in enumerate(missing_images):
+        idx = (i + 1) * step
+        if idx >= num_p:
+            idx = num_p - 1
+            
+        target_p = paragraphs[idx]
+        img_tag = soup.new_tag("img", src=img_url, style="width:100%;height:auto;margin:20px 0;display:block;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.05);")
+        target_p.insert_after(img_tag)
+        
+    for empty_img in soup.find_all("img"):
+        src = empty_img.get("src", "")
+        if not src or "素材URL" in src or "素材图片URL" in src or empty_img.get("src") == "":
+            empty_img.decompose()
+            
+    return str(soup)
 
 
 def _append_summary_section(body: str, summary: str) -> str:
     body += (
-        "<section style='margin-top:28px;padding:16px;background-color:#f8fafc;border-radius:6px;'>"
-        "<p style='margin:0;color:#0f172a;font-size:15px;line-height:1.7;font-weight:500;'><span style='color:#0ea5e9;font-weight:600;margin-right:8px;'>编者按</span>"
+        "<section style='margin-top:32px;padding:16px 20px;background-color:#f8fafc;border-radius:6px;border-left:4px solid #0369a1;'>"
+        "<p style='margin:0;color:#0f172a;font-size:15px;line-height:1.7;font-weight:500;'><span style='color:#0369a1;font-weight:600;margin-right:8px;'>编者按：</span>"
         f"{escape(summary)}</p>"
         "</section>"
     )
