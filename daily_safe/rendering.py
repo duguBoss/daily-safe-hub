@@ -50,15 +50,10 @@ def _ensure_min_content(body: str) -> str:
     text_len = len(BeautifulSoup(body, "html.parser").get_text(" ", strip=True))
     if text_len < 900:
         body += (
-            "<section style='margin-top:14px;'>"
-            "<h3 style='margin:0 0 8px;font-size:20px;color:#0f172a;'>防守方执行清单</h3>"
-            "<p>建议从三个层面立即落地：第一，资产层面先确认受影响系统版本、暴露面和外网入口，"
-            "把高风险节点拉出清单；第二，检测层面增加针对该攻击链的日志规则与告警聚合，"
-            "优先关注异常登录、提权与横向移动行为；第三，响应层面同步修复优先级，明确24小时内可完成项。"
-            "</p>"
-            "<p>若你在企业内负责安全运营，可以把本文拆成"高层汇报版 + 执行任务版"两份："
-            "汇报版强调业务影响与处置进展，任务版明确人、系统、时间和验收标准。这样既能提升团队协作效率，"
-            "也能减少事件处理过程中的信息断层和重复沟通成本。</p>"
+            "<section style='margin-top:32px;'>"
+            "<h3 style='display:inline-block;margin:0 0 16px;font-size:18px;color:#1C1F23;font-weight:bold;padding-bottom:6px;border-bottom:2px solid #0052D9;letter-spacing:1px;'>防守方执行清单</h3>"
+            "<p style='margin:0 0 16px;color:#4B5563;font-size:16px;line-height:1.8;text-align:justify;'>建议从三个层面立即落地：<br><strong style='color:#0052D9;font-weight:600;'>第一，资产层面</strong>先确认受影响系统版本、暴露面和外网入口，把高风险节点拉出清单；<br><strong style='color:#0052D9;font-weight:600;'>第二，检测层面</strong>增加针对该攻击链的日志规则与告警聚合，优先关注异常登录、提权与横向移动行为；<br><strong style='color:#0052D9;font-weight:600;'>第三，响应层面</strong>同步修复优先级，明确24小时内可完成项。</p>"
+            "<p style='margin:0;color:#4B5563;font-size:16px;line-height:1.8;text-align:justify;'>若你在企业内负责安全运营，建议将本文分为<strong>“高层简报版”</strong>与<strong>“执行任务版”</strong>。简报版强调业务风险与处置进度；任务版明确责任人、系统、时间窗与验收标准，全面提升团队协同效率并降低沟通成本。</p>"
             "</section>"
         )
     return body
@@ -68,18 +63,18 @@ def _append_missing_images(body: str, github_images: list[str]) -> str:
     missing_images = [u for u in github_images if u not in body]
     for u in missing_images:
         body += (
-            "<figure style='margin:16px 0;padding:8px;border:1px solid #fca5a5;border-radius:10px;'>"
-            f"<img src='{escape(u)}' style='width:100%;height:auto;border-radius:6px;'/>"
-            "</figure>"
+            "<section style='margin:28px 0;text-align:center;'>"
+            f"<img src='{escape(u)}' style='max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.06);'/>"
+            "</section>"
         )
     return body
 
 
 def _append_summary_section(body: str, summary: str) -> str:
     body += (
-        "<section style='margin-top:18px;padding:14px;background:#fff7ed;border:1px solid #fdba74;border-radius:10px;'>"
-        "<h3 style='margin:0 0 8px;font-size:18px;color:#7c2d12;'>总结</h3>"
-        f"<p style='margin:0;color:#7c2d12;'>{escape(summary)}</p>"
+        "<section style='margin-top:32px;padding:24px;background-color:#F8FAFC;border-left:4px solid #0052D9;border-radius:0 8px 8px 0;box-shadow:0 2px 8px rgba(0,0,0,0.02);'>"
+        "<h3 style='margin:0 0 12px;font-size:18px;color:#0052D9;font-weight:bold;letter-spacing:0.5px;'>情报总结</h3>"
+        f"<p style='margin:0;color:#334155;font-size:15px;line-height:1.8;text-align:justify;'>{escape(summary)}</p>"
         "</section>"
     )
     return body
@@ -87,12 +82,10 @@ def _append_summary_section(body: str, summary: str) -> str:
 
 def _append_tags_section(body: str, text_tags: list[str]) -> str:
     if text_tags:
-        tags_text = " ".join(text_tags)
+        tags_html = "".join([f"<span style='display:inline-block;margin:0 8px 8px 0;padding:4px 14px;background-color:#F1F5F9;color:#64748B;font-size:13px;border-radius:100px;letter-spacing:0.5px;'>{escape(t)}</span>" for t in text_tags])
         body += (
-            "<section style='margin-top:10px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;'>"
-            "<p style='margin:0;font-size:14px;color:#334155;'>"
-            f"标签：{escape(tags_text)}"
-            "</p>"
+            "<section style='margin-top:36px;'>"
+            f"<section>{tags_html}</section>"
             "</section>"
         )
     return body
