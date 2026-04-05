@@ -3,8 +3,8 @@ name: Daily Safe Share
 on:
   workflow_dispatch:
   schedule:
-    # 05:00 Asia/Shanghai = 21:00 UTC (previous day)
-    - cron: "0 21 * * *"
+    # 06:15 Asia/Shanghai = 22:15 UTC (previous day)
+    - cron: "15 22 * * *"
 
 permissions:
   contents: write
